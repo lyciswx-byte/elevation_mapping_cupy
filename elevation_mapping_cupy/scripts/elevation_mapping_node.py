@@ -51,6 +51,11 @@ class ElevationMappingNode(Node):
         )
 
         self.root = get_package_share_directory("elevation_mapping_cupy")
+
+    def _declare_parameter_if_not_set(self, name: str, default_value) -> None:
+        """Declare a parameter only if it hasn't been declared via YAML overrides."""
+        if not self.has_parameter(name):
+            self.declare_parameter(name, default_value)
         weight_file = os.path.join(self.root, "config/core/weights.dat")
         plugin_config_file = os.path.join(self.root, "config/core/plugin_config.yaml")
 
@@ -61,10 +66,11 @@ class ElevationMappingNode(Node):
             plugin_config_file=plugin_config_file
         )
 
-        self.declare_parameter('masked_replace_service_mask_layer_name', 'mask')
-        self.declare_parameter('save_map_default_topic', 'elevation_map')
-        self.declare_parameter('save_map_storage_id', 'mcap')
-        self.declare_parameter('service_namespace', '/elevation_mapping_cupy')
+        # Declare parameters only if not already declared (from YAML overrides)
+        self._declare_parameter_if_not_set('masked_replace_service_mask_layer_name', 'mask')
+        self._declare_parameter_if_not_set('save_map_default_topic', 'elevation_map')
+        self._declare_parameter_if_not_set('save_map_storage_id', 'mcap')
+        self._declare_parameter_if_not_set('service_namespace', '/elevation_mapping_cupy')
 
         # Read ROS parameters (including YAML)
         self.initialize_ros()
